@@ -1,0 +1,53 @@
+{
+  "manifest_version": 3,
+  "name": "Verify AI",
+  "version": "1.0.0",
+  "description": "Explains whether a selected message, email, or link is a scam. Calibrated AI intent analysis in a Chrome side panel.",
+  "minimum_chrome_version": "116",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_title": "Open Verify AI",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "permissions": [
+    "sidePanel",
+    "contextMenus",
+    "storage",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://generativelanguage.googleapis.com/*"
+  ],
+  "commands": {
+    "check-selection": {
+      "suggested_key": {
+        "default": "Alt+Shift+V"
+      },
+      "description": "Check selected text with Verify AI"
+    }
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "name": "Verify AI - Scam & Phishing Detector",
+  "description": "Chrome side-panel extension UI that explains whether a selected message, email, or link is a scam with clear evidence and direct imperatives.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+

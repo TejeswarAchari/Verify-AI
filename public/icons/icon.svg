@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="iconBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4F46E5" />
+      <stop offset="100%" stop-color="#4338CA" />
+    </linearGradient>
+  </defs>
+  <!-- Modern squircle rounded rectangle -->
+  <rect x="8" y="8" width="112" height="112" rx="28" fill="url(#iconBg)" />
+  <!-- Verification check & scan mark -->
+  <path d="M42 66 L56 80 L88 48" fill="none" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" />
+  <!-- Subtle accent dot -->
+  <circle cx="94" cy="34" r="5" fill="#A5B4FC" />
+</svg>

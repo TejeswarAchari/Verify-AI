@@ -35,6 +35,13 @@ export const ErrorInline: React.FC<ErrorInlineProps> = ({
             'Request rate limit temporarily reached. Please wait a few seconds before retrying.',
           showSettingsLink: false,
         };
+      case 'provider_busy':
+        return {
+          title: 'Gemini Temporarily Busy (503)',
+          description:
+            errorMessage || 'Gemini is temporarily at capacity. Wait a moment, then retry.',
+          showSettingsLink: false,
+        };
       case 'text_too_long':
         return {
           title: 'Text Limit Exceeded',

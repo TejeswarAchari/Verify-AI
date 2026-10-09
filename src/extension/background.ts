@@ -1,7 +1,7 @@
 // Manifest V3 Background Service Worker for Verify AI
 
 const CONTEXT_MENU_ID = 'verify-ai-check-selection';
-const PENDING_STORAGE_KEY = 'verify_pending_check';
+const PENDING_STORAGE_KEY = 'verifi_pending_check';
 
 // 1. Setup Context Menus and Side Panel behavior on install
 chrome.runtime.onInstalled.addListener(() => {
@@ -37,6 +37,9 @@ chrome.action.onClicked.addListener(async (tab) => {
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   if (info.menuItemId === CONTEXT_MENU_ID && tab?.id) {
     const targetText = info.selectionText || info.linkUrl || '';
+    const panelPromise = chrome.sidePanel?.open({ tabId: tab.id }).catch((err) => {
+      console.warn('Failed to open side panel on context menu click', err);
+    });
 
     if (targetText && chrome.storage?.session) {
       await chrome.storage.session.set({
@@ -48,13 +51,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
       });
     }
 
-    if (chrome.sidePanel) {
-      try {
-        await chrome.sidePanel.open({ tabId: tab.id });
-      } catch (err) {
-        console.warn('Failed to open side panel on context menu click', err);
-      }
-    }
+    await panelPromise;
   }
 });
 
@@ -63,6 +60,10 @@ chrome.commands.onCommand.addListener(async (command) => {
   if (command === 'check-selection') {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (!tab?.id) return;
+
+    const panelPromise = chrome.sidePanel?.open({ tabId: tab.id }).catch((err) => {
+      console.warn('Failed to open side panel on command', err);
+    });
 
     try {
       // Query content script for selection or nearest enclosing message body
@@ -83,12 +84,6 @@ chrome.commands.onCommand.addListener(async (command) => {
       // Content script may not be loaded on internal pages (chrome://, about:blank)
     }
 
-    if (chrome.sidePanel) {
-      try {
-        await chrome.sidePanel.open({ tabId: tab.id });
-      } catch (err) {
-        console.warn('Failed to open side panel on command', err);
-      }
-    }
+    await panelPromise;
   }
 });

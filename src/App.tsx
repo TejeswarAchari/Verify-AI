@@ -40,6 +40,7 @@ export default function App() {
 
   // History state loaded from store (persistent, with 24h expiry)
   const [history, setHistory] = useState<AnalysisResult[]>([]);
+  const [hasApiKey, setHasApiKey] = useState(false);
 
   // First-run tour state
   const [showTour, setShowTour] = useState<boolean>(false);
@@ -51,30 +52,33 @@ export default function App() {
   // Setup: Hydrate storage, check pending items, and manage 24h expiry timers
   useEffect(() => {
     let unsubscribe: (() => void) | undefined;
+    let handledPendingTimestamp = 0;
+
+    const handlePendingCheck = async (item: { text: string; timestamp: number }) => {
+      if (!item.text || item.timestamp <= handledPendingTimestamp) return;
+      handledPendingTimestamp = item.timestamp;
+      await store.clearPendingCheck();
+      setInputText(item.text);
+      setActiveTab('check');
+      if (store.hasKey()) handleStartAnalysis(item.text);
+    };
 
     const startup = async () => {
       await store.ready();
+      setHasApiKey(store.hasKey());
       setShowTour(!store.getTourCompleted());
       setHistory(store.getHistory());
 
-      // 1. Check for pending item from context-menu or keyboard shortcut
+      // Subscribe before reading to avoid missing a check while the panel starts.
+      unsubscribe = store.subscribeToPendingCheck((item) => {
+        void handlePendingCheck(item);
+      });
+
+      // Check for pending item from context-menu or keyboard shortcut.
       const pending = await store.getPendingCheck();
       if (pending?.text) {
-        await store.clearPendingCheck();
-        setInputText(pending.text);
-        setActiveTab('check');
-        handleStartAnalysis(pending.text);
+        await handlePendingCheck(pending);
       }
-
-      // 2. Subscribe to storage session changes while side panel is open
-      unsubscribe = store.subscribeToPendingCheck(async (item) => {
-        if (item?.text) {
-          await store.clearPendingCheck();
-          setInputText(item.text);
-          setActiveTab('check');
-          handleStartAnalysis(item.text);
-        }
-      });
     };
 
     startup();
@@ -186,8 +190,6 @@ export default function App() {
     }
   };
 
-  const hasApiKey = store.hasKey();
-
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col justify-start items-center sm:py-6 p-0 font-sans antialiased text-slate-900">
       {/* 
@@ -215,7 +217,7 @@ export default function App() {
                 <TourInline
                   onComplete={() => setShowTour(false)}
                   onApiKeySaved={() => {
-                    // Refresh view
+                    setHasApiKey(store.hasKey());
                   }}
                 />
               )}
@@ -322,6 +324,7 @@ export default function App() {
           {activeTab === 'settings' && (
             <SettingsTab
               onApiKeyUpdated={() => {
+                setHasApiKey(store.hasKey());
                 if (checkState === 'error' && errorType === 'bad_key') {
                   setCheckState('empty');
                 }
@@ -334,6 +337,7 @@ export default function App() {
                 setHistory([]);
               }}
               onAllDataCleared={() => {
+                setHasApiKey(false);
                 setHistory([]);
                 setInputText('');
                 setCurrentResult(null);

@@ -43,6 +43,7 @@ export type CheckState = 'empty' | 'analyzing' | 'result' | 'error';
 export type ErrorType =
   | 'bad_key'
   | 'rate_limited'
+  | 'provider_busy'
   | 'network_failure'
   | 'text_too_long'
   | 'malformed_json'

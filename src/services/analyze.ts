@@ -1,7 +1,7 @@
 import { AnalysisResult, Highlight, Reason, LinkAnalysis, VerdictType } from '../types';
 import { inspectUrlsInText } from '../utils/urlInspector';
 
-export const GEMINI_MODEL = 'gemini-2.5-flash';
+export const GEMINI_MODEL = 'gemini-3.5-flash-lite';
 const REQUEST_TIMEOUT_MS = 30000; // 30 seconds timeout
 const TEST_TIMEOUT_MS = 10000; // 10 seconds for key validation test
 
@@ -28,9 +28,9 @@ export interface RawGeminiAnalysis {
 }
 
 export class AnalysisError extends Error {
-  code: 'bad_key' | 'rate_limited' | 'network_failure' | 'text_too_long' | 'malformed_json' | 'generic';
+  code: 'bad_key' | 'rate_limited' | 'provider_busy' | 'network_failure' | 'text_too_long' | 'malformed_json' | 'generic';
   constructor(
-    code: 'bad_key' | 'rate_limited' | 'network_failure' | 'text_too_long' | 'malformed_json' | 'generic',
+    code: 'bad_key' | 'rate_limited' | 'provider_busy' | 'network_failure' | 'text_too_long' | 'malformed_json' | 'generic',
     message: string
   ) {
     super(message);
@@ -107,11 +107,6 @@ export async function testGeminiApiKey(apiKey: string): Promise<{ ok: boolean; m
     return { ok: false, message: 'API key cannot be empty.' };
   }
 
-  // Format check: Google AI Studio keys typically start with AIza and are 39 chars
-  if (!trimmed.startsWith('AIza') || trimmed.length < 25) {
-    return { ok: false, message: 'Invalid key format. Gemini API keys start with "AIza".' };
-  }
-
   // If in web preview, test through local server proxy first
   const isWebPreview = typeof window !== 'undefined' && window.location.protocol.startsWith('http');
   if (isWebPreview) {
@@ -129,9 +124,7 @@ export async function testGeminiApiKey(apiKey: string): Promise<{ ok: boolean; m
     }
   }
 
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${encodeURIComponent(
-    trimmed
-  )}`;
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TEST_TIMEOUT_MS);
@@ -141,6 +134,7 @@ export async function testGeminiApiKey(apiKey: string): Promise<{ ok: boolean; m
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'x-goog-api-key': trimmed,
       },
       signal: controller.signal,
       body: JSON.stringify({
@@ -169,7 +163,14 @@ export async function testGeminiApiKey(apiKey: string): Promise<{ ok: boolean; m
       return { ok: false, message: 'Rate limit reached on this API key (429).' };
     }
 
-    return { ok: false, message: `Verification failed with HTTP ${response.status}.` };
+    const errorData = await response.json().catch(() => null);
+    const apiMessage = errorData?.error?.message;
+    return {
+      ok: false,
+      message: apiMessage
+        ? `Verification failed: ${apiMessage}`
+        : `Verification failed with HTTP ${response.status}.`,
+    };
   } catch (err: unknown) {
     clearTimeout(timer);
     if (err instanceof DOMException && err.name === 'AbortError') {
@@ -225,6 +226,12 @@ async function callGeminiApi(
         if (response.status === 429) {
           throw new AnalysisError('rate_limited', 'API rate limit exceeded.');
         }
+        if (response.status === 503) {
+          throw new AnalysisError(
+            'provider_busy',
+            'Gemini is temporarily at capacity. Wait a moment, then retry.'
+          );
+        }
         throw new AnalysisError('generic', errMsg);
       }
     } catch (err: unknown) {
@@ -246,9 +253,7 @@ async function callGeminiApi(
   }
 
   // Direct endpoint for Chrome extension runtime
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${encodeURIComponent(
-    apiKey
-  )}`;
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
   const promptContent = extraContext
     ? `Input content to evaluate:\n"""\n${userText}\n"""\n\nLocal Pre-Analysis Context:\n${extraContext}`
@@ -263,6 +268,7 @@ async function callGeminiApi(
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'x-goog-api-key': apiKey,
       },
       signal: controller.signal,
       body: JSON.stringify({
@@ -313,6 +319,12 @@ async function callGeminiApi(
       );
     }
     const errText = await response.text().catch(() => '');
+    if (response.status === 503) {
+      throw new AnalysisError(
+        'provider_busy',
+        'Gemini is temporarily at capacity. Wait a moment, then retry.'
+      );
+    }
     throw new AnalysisError(
       'generic',
       `Analysis request failed (${response.status}): ${errText.slice(0, 150)}`

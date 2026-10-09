@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ExternalLink, Check, ArrowRight, ArrowLeft, Key, Sparkles, CheckCircle2, MousePointerClick } from 'lucide-react';
 import { store } from '../services/store';
 import { testGeminiApiKey } from '../services/analyze';
+import { getShortcutLabel } from '../utils/shortcut';
 
 interface TourInlineProps {
   onComplete: () => void;
@@ -88,7 +89,7 @@ export const TourInline: React.FC<TourInlineProps> = ({ onComplete, onApiKeySave
                   setTourKey(e.target.value);
                   setKeyStatus(null);
                 }}
-                placeholder="AIzaSy..."
+                placeholder="Paste your Google AI Studio API key"
                 className="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-2 text-[12px] font-mono text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/15 focus:outline-none shadow-xs"
               />
               <button
@@ -164,7 +165,7 @@ export const TourInline: React.FC<TourInlineProps> = ({ onComplete, onApiKeySave
                 B
               </div>
               <span className="leading-snug">
-                <strong>Keyboard shortcut:</strong> Press <kbd className="font-mono bg-slate-100 px-1 py-0.5 rounded text-[10px] border border-slate-200 text-slate-800">Alt+Shift+V</kbd> to inspect the active text instantly.
+                <strong>Keyboard shortcut:</strong> Press <kbd className="font-mono bg-slate-100 px-1 py-0.5 rounded text-[10px] border border-slate-200 text-slate-800">{getShortcutLabel()}</kbd> to inspect the active text instantly.
               </span>
             </div>
             <div className="flex items-start gap-2.5 bg-white p-2.5 rounded-xl border border-slate-200/90 shadow-2xs">

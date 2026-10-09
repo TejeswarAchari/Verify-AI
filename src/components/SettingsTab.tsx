@@ -116,7 +116,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                 setApiKey(e.target.value);
                 setTestResult(null);
               }}
-              placeholder="AIzaSy..."
+              placeholder="Paste your Google AI Studio API key"
               className="w-full bg-white border border-slate-200 rounded-xl py-2 pl-3 pr-9 text-[12.5px] font-mono text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/15 focus:outline-none transition-all shadow-xs"
             />
             <button

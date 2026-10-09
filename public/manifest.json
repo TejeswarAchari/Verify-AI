@@ -45,7 +45,8 @@
   "commands": {
     "check-selection": {
       "suggested_key": {
-        "default": "Alt+Shift+V"
+        "default": "Alt+Shift+V",
+        "mac": "Alt+Shift+V"
       },
       "description": "Check selected text with Verify AI"
     }

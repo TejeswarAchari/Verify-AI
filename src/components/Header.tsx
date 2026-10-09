@@ -1,6 +1,7 @@
 import React from 'react';
 import { TabType } from '../types';
 import { CheckCheck, Clock, Settings2 } from 'lucide-react';
+import { getShortcutLabel } from '../utils/shortcut';
 
 interface HeaderProps {
   activeTab: TabType;
@@ -32,7 +33,7 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Extension shortcut hint */}
         <div className="flex items-center gap-1.5 text-[10.5px] font-mono text-slate-500">
           <kbd className="px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200/80 text-slate-600 font-medium">
-            Alt+Shift+V
+            {getShortcutLabel()}
           </kbd>
         </div>
       </div>

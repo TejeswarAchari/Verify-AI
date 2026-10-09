@@ -9,7 +9,7 @@ dotenv.config();
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const GEMINI_MODEL = 'gemini-2.5-flash';
+const GEMINI_MODEL = 'gemini-3.5-flash-lite';
 
 const SYSTEM_INSTRUCTION = `You are a scam analyst. Judge intent and context, not keywords. A message can be a scam with no obvious scam words, and a message with "urgent" or "click here" can be legitimate.
 Be calibrated. Do not default to "suspicious" to be safe. If it is ordinary, return "safe" with an empty signals array.

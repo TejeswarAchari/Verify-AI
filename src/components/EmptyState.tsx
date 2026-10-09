@@ -1,5 +1,6 @@
 import React from 'react';
 import { Clipboard, KeyRound, Sparkles, AlertCircle, ArrowRight, Zap } from 'lucide-react';
+import { getShortcutLabel } from '../utils/shortcut';
 
 interface EmptyStateProps {
   inputText: string;
@@ -45,7 +46,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
               Scam &amp; Phishing Detection
             </h2>
             <p className="text-[11.5px] leading-relaxed text-slate-600 mt-0.5">
-              Select text on any webpage, right-click &amp; choose <strong className="text-slate-800 font-medium">Check with Verify AI</strong> (<kbd className="px-1 py-0.5 rounded bg-slate-200/80 text-[10px] font-mono text-slate-700">Alt+Shift+V</kbd>), or paste content below to evaluate.
+              Select text on any webpage, right-click &amp; choose <strong className="text-slate-800 font-medium">Check with Verify AI</strong> (<kbd className="px-1 py-0.5 rounded bg-slate-200/80 text-[10px] font-mono text-slate-700">{getShortcutLabel()}</kbd>), or paste content below to evaluate.
             </p>
           </div>
         </div>
